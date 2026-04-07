@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe Mensual — RAYDAL Hospitality</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #CC2200;
+      --accent: #1a1a1a;
+      --white: #FFFFFF;
+      --gray-50: #F8F9FA;
+      --gray-100: #F0F2F5;
+      --gray-200: #E4E6EB;
+      --gray-400: #8A8D91;
+      --gray-600: #50555B;
+      --gray-800: #1A1D1F;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F0F2F5; color: var(--gray-800); font-size: 14px; }
+
+    #edit-panel { background: #0A0C0E; color: #e2e8f0; padding: 0; position: relative; }
+    #edit-panel.hidden { display: none; }
+    .edit-header { background: var(--primary); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .edit-header h2 { color: white; font-size: 15px; font-weight: 700; }
+    .edit-header span { color: rgba(255,255,255,0.6); font-size: 12px; margin-left: 12px; }
+    .edit-body { padding: 24px 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    .edit-section { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
+    .edit-section h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFD500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .edit-section.full-width { grid-column: 1 / -1; }
+    .edit-section.hidden { display: none; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 5px; font-weight: 500; }
+    .field input, .field textarea, .field select { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 12px; color: white; font-family: 'Inter', sans-serif; font-size: 12px; outline: none; transition: border 0.15s; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--primary); }
+    .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .field .help-text { font-size: 10px; color: #666; margin-top: 4px; }
+    .edit-footer { padding: 16px 32px; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 12px; justify-content: flex-end; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
+    .btn-secondary { background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); padding: 10px 24px; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; }
+
+    #toolbar { background: linear-gradient(135deg, #0033CC 0%, #1363FB 100%); padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    #toolbar .logo-text { color: white; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    #toolbar .toolbar-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-edit { background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); padding: 7px 16px; border-radius: 7px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11px; cursor: pointer; }
+    .btn-print { background: var(--primary); color: white; border: none; padding: 7px 16px; border-radius: 7px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; cursor: pointer; }
+    .month-selector { background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.18); padding: 6px 10px; border-radius: 7px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; cursor: pointer; outline: none; min-width: 130px; }
+    .month-selector option { background: var(--gray-800); color: white; }
+    .btn-new-month { background: rgba(255,213,0,0.12); color: #FFD500; border: 1px solid rgba(255,213,0,0.25); padding: 7px 14px; border-radius: 7px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; cursor: pointer; }
+    .btn-new-month:hover { background: rgba(255,213,0,0.22); }
+    .toolbar-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.1); }
+    .server-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+    .server-badge.online { background: rgba(0,200,150,0.15); color: #00C896; }
+    .server-badge.offline { background: rgba(255,71,87,0.15); color: #FF4757; }
+    @media print { #toolbar, #edit-panel { display: none !important; } }
+
+    .brand-tabs { display: flex; gap: 0; background: var(--gray-800); padding: 0 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .brand-tab { flex: 1; padding: 12px 16px; border: none; background: transparent; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .brand-tab.active { color: white; border-bottom-color: var(--primary); }
+    .brand-tab:hover { color: rgba(255,255,255,0.8); }
+
+    #report { max-width: 900px; margin: 24px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 40px rgba(0,0,0,0.1); }
+    .brand-section { display: none; }
+    .brand-section.active { display: block; }
+
+    .cover { background: var(--primary); padding: 64px 56px 56px; position: relative; overflow: hidden; }
+    .cover::before { content: ''; position: absolute; top: -80px; right: -80px; width: 320px; height: 320px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+    .cover::after { content: ''; position: absolute; bottom: -40px; left: 200px; width: 200px; height: 200px; background: rgba(255,255,255,0.03); border-radius: 50%; }
+    .cover-logo { margin-bottom: 32px; }
+    .cover-group { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .cover-brand { color: white; font-size: 36px; font-weight: 900; line-height: 1.15; margin-bottom: 32px; }
+    .cover-meta { display: flex; gap: 32px; }
+    .cover-meta-label { color: rgba(255,255,255,0.4); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .cover-meta-value { color: white; font-size: 14px; font-weight: 700; margin-top: 3px; }
+    .cover-accent { position: absolute; bottom: 0; right: 0; width: 6px; height: 100%; background: var(--primary); }
+
+    .section { padding: 40px 56px; border-bottom: 1px solid var(--gray-200); }
+    .section:last-child { border-bottom: none; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .section-title { font-size: 20px; font-weight: 800; color: var(--gray-800); border-left: 4px solid var(--primary); padding-left: 16px; }
+
+    .exec-card { background: var(--gray-50); border-radius: 12px; padding: 20px 24px; border-left: 4px solid var(--primary); margin-bottom: 24px; }
+    .exec-card p { color: var(--gray-600); font-size: 13px; line-height: 1.7; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .kpi-card { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px; text-align: center; }
+    .kpi-value { font-size: 24px; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+    .kpi-label { font-size: 10px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+
+    .paid-media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .media-card { background: var(--gray-50); border-radius: 12px; padding: 20px; }
+    .media-title { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--gray-200); }
+    .metric-box { background: white; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .metric-label { font-size: 10px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .metric-value { font-size: 18px; font-weight: 800; color: var(--gray-800); }
+
+    .posts-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .post-card { background: var(--gray-50); border-radius: 12px; padding: 16px; }
+    .post-format { font-size: 10px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .post-desc { font-size: 12px; color: var(--gray-800); font-weight: 600; margin-bottom: 12px; }
+    .post-metrics { font-size: 11px; color: var(--gray-600); margin-bottom: 12px; line-height: 1.6; }
+    .post-link { display: inline-block; padding: 6px 12px; border-radius: 6px; background: var(--primary); color: white; font-size: 10px; font-weight: 600; text-decoration: none; }
+
+    .campaigns-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
+    .campaigns-table th { background: var(--gray-100); padding: 12px; text-align: left; font-weight: 700; color: var(--gray-800); border-bottom: 2px solid var(--gray-200); }
+    .campaigns-table td { padding: 12px; border-bottom: 1px solid var(--gray-200); }
+    .campaigns-table tr:last-child td { border-bottom: none; }
+    .canal-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; color: white; }
+    .canal-email { background: #2563EB; }
+    .canal-sms { background: #10B981; }
+    .canal-both { background: #7C3AED; }
+
+    .automations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .auto-card { background: var(--gray-50); border-radius: 12px; padding: 16px; }
+    .auto-title { font-size: 12px; font-weight: 700; color: var(--gray-800); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .auto-stat { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200); }
+    .auto-stat:last-child { border-bottom: none; }
+    .auto-stat-label { font-size: 11px; color: var(--gray-600); font-weight: 500; }
+    .auto-stat-value { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+    .loyalty-card { background: var(--gray-50); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .loyalty-title { font-size: 12px; font-weight: 700; color: var(--gray-800); margin-bottom: 12px; }
+    .loyalty-stat { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 24px; }
+    [id$="-loyalty-canvas"] { height: 220px !important; max-height: 220px; }
+
+    .analysis-card { background: var(--gray-50); border-radius: 12px; padding: 20px; border-left: 4px solid var(--primary); }
+    .analysis-card p { color: var(--gray-600); font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
+    .analysis-card p:last-child { margin-bottom: 0; }
+
+    .report-footer { background: linear-gradient(135deg, #0033CC 0%, #1363FB 100%); padding: 32px 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .footer-contact { color: rgba(255,255,255,0.4); font-size: 11px; text-align: right; }
+    .footer-contact strong { color: rgba(255,255,255,0.7); display: block; margin-bottom: 2px; }
+
+    @media (max-width: 768px) { .kpi-grid, .paid-media-grid, .posts-grid, .automations-grid { grid-template-columns: 1fr; } .edit-body { grid-template-columns: 1fr; } }
+    @media print { body { background: white; } #report { box-shadow: none; max-width: 100%; margin: 0; border-radius: 0; } .section { page-break-inside: avoid; } }
+  </style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <div class="logo-text">
+    <img src="/logo.svg" alt="En La Nube Agency" style="height:32px;width:auto;">
+  </div>
+  <div class="toolbar-actions">
+    <span id="server-badge" class="server-badge offline">● Local</span>
+    <div class="toolbar-divider"></div>
+    <button class="btn-edit" onclick="toggleEditPanel()">✎ Editar</button>
+    <div class="toolbar-divider"></div>
+    <select id="month-selector" class="month-selector" onchange="switchToMonth(this.value)"></select>
+    <button class="btn-new-month" onclick="newMonth()">＋ Nuevo mes</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn-print" onclick="exportHTML()" style="background:#1d4ed8;">⬇ Exportar HTML</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn-print" onclick="window.print()">📄 Imprimir</button>
+  </div>
+</div>
+
+<!-- BRAND TABS -->
+<div class="brand-tabs">
+  <button class="brand-tab active" onclick="switchBrand('sabor')">Sabor</button>
+  <button class="brand-tab" onclick="switchBrand('threeamigos')">Three Amigos</button>
+  <button class="brand-tab" onclick="switchBrand('lacaseta')">La Caseta</button>
+  <button class="brand-tab" onclick="switchBrand('mabi')">Mabí</button>
+</div>
+
+<!-- EDIT PANEL -->
+<div id="edit-panel" class="hidden">
+  <div class="edit-header">
+    <h2>PANEL DE EDICIÓN</h2>
+    <span>Haz clic en "Actualizar informe" para guardar los cambios</span>
+  </div>
+  <div class="edit-body">
+
+    <!-- SABOR -->
+    <div class="edit-section brand-section-sabor">
+      <h3>Mes</h3>
+      <div class="field"><label>Período</label><input type="text" id="s-mes" placeholder="Ej: Marzo 2026"></div>
+    </div>
+    <div class="edit-section brand-section-sabor">
+      <h3>Resumen Ejecutivo</h3>
+      <div class="field"><label>Resumen narrativo</label><textarea id="s-resumen" placeholder="Síntesis del mes..."></textarea></div>
+    </div>
+    <div class="edit-section brand-section-sabor">
+      <h3>Google Ads</h3>
+      <div class="field"><label>Inversión ($)</label><input type="number" id="s-google-inversion"></div>
+      <div class="field"><label>Ingresos ($)</label><input type="number" id="s-google-ingresos"></div>
+      <div class="field"><label>ROAS</label><input type="number" id="s-google-roas" step="0.01"></div>
+    </div>
+    <div class="edit-section brand-section-sabor">
+      <h3>Meta Ads</h3>
+      <div class="field"><label>Inversión ($)</label><input type="number" id="s-meta-inversion"></div>
+      <div class="field"><label>Ingresos ($)</label><input type="number" id="s-meta-ingresos"></div>
+      <div class="field"><label>ROAS</label><input type="number" id="s-meta-roas" step="0.01"></div>
+    </div>
+    <div class="edit-section brand-section-sabor">
+      <h3>Orgánico</h3>
+      <div class="field"><label>Nuevos seguidores</label><input type="number" id="s-org-seguidores"></div>
+      <div class="field"><label>Alcance</label><input type="number" id="s-org-alcance"></div>
+      <div class="field"><label>Engagement</label><input type="number" id="s-org-engagement"></div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Top 3 Carruseles</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-car1-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-car1-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="s-car1-engagement"></div><div class="field"><label>Guardados</label><input type="number" id="s-car1-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-car1-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-car2-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-car2-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="s-car2-engagement"></div><div class="field"><label>Guardados</label><input type="number" id="s-car2-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-car2-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-car3-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-car3-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="s-car3-engagement"></div><div class="field"><label>Guardados</label><input type="number" id="s-car3-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-car3-link"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Top 3 Reels</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-ree1-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-ree1-alcance"></div><div class="field"><label>Reproducciones</label><input type="number" id="s-ree1-reproducciones"></div><div class="field"><label>Guardados</label><input type="number" id="s-ree1-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-ree1-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-ree2-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-ree2-alcance"></div><div class="field"><label>Reproducciones</label><input type="number" id="s-ree2-reproducciones"></div><div class="field"><label>Guardados</label><input type="number" id="s-ree2-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-ree2-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="s-ree3-desc"></div><div class="field"><label>Alcance</label><input type="number" id="s-ree3-alcance"></div><div class="field"><label>Reproducciones</label><input type="number" id="s-ree3-reproducciones"></div><div class="field"><label>Guardados</label><input type="number" id="s-ree3-guardados"></div><div class="field"><label>Link</label><input type="text" id="s-ree3-link"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Campañas de Email</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+        <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp1-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp1-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp1-canal" onchange="updateCampFields(1)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp1-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp1-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp1-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp1-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp1-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp1-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp1-compras"></div></div><div id="s-camp1-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp1-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp1-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp1-sms-ventas"></div></div></div>
+        <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp2-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp2-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp2-canal" onchange="updateCampFields(2)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp2-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp2-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp2-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp2-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp2-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp2-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp2-compras"></div></div><div id="s-camp2-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp2-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp2-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp2-sms-ventas"></div></div></div>
+        <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp3-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp3-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp3-canal" onchange="updateCampFields(3)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp3-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp3-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp3-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp3-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp3-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp3-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp3-compras"></div></div><div id="s-camp3-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp3-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp3-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp3-sms-ventas"></div></div></div>
+        <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp4-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp4-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp4-canal" onchange="updateCampFields(4)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp4-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp4-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp4-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp4-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp4-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp4-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp4-compras"></div></div><div id="s-camp4-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp4-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp4-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp4-sms-ventas"></div></div></div>
+        <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp5-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp5-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp5-canal" onchange="updateCampFields(5)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp5-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp5-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp5-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp5-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp5-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp5-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp5-compras"></div></div><div id="s-camp5-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp5-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp5-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp5-sms-ventas"></div></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Automatizaciones</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
+        <div><h4 style="font-size:10px;color:#FFD500;margin-bottom:8px;">🛒 Carrito SMS</h4><div class="field"><label>Enviados</label><input type="number" id="s-cart-sms-enviados"></div><div class="field"><label>Recuperados</label><input type="number" id="s-cart-sms-recuperados"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-cart-sms-ventas"></div></div>
+        <div><h4 style="font-size:10px;color:#FFD500;margin-bottom:8px;">🛒 Carrito Email</h4><div class="field"><label>Enviados</label><input type="number" id="s-cart-email-enviados"></div><div class="field"><label>Recuperados</label><input type="number" id="s-cart-email-recuperados"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-cart-email-ventas"></div></div>
+        <div><h4 style="font-size:10px;color:#FFD500;margin-bottom:8px;">🎁 Post-Compra Loyalty</h4><div class="field"><label>Vistas</label><input type="number" id="s-loyalty-views"></div><div class="field"><label>Compras</label><input type="number" id="s-loyalty-compras"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-loyalty-ventas"></div></div>
+        <div><h4 style="font-size:10px;color:#FFD500;margin-bottom:8px;">🔄 Win-back 14 días</h4><div class="field"><label>Enviados</label><input type="number" id="s-winback-enviados"></div><div class="field"><label>Recuperados</label><input type="number" id="s-winback-recuperados"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-winback-ventas"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Loyalty Program</h3>
+      <div class="field"><label>Nuevos enrolados este mes</label><input type="number" id="s-loyalty-enrolados"></div>
+      <div class="field"><label>Datos mensuales (12 meses Jan-Dec)</label><textarea id="s-loyalty-chart-data" placeholder="[0,0,0,0,0,0,0,0,0,0,0,0]"></textarea><div class="help-text">Ej: [1300,1286,1980,0,0,0,0,0,0,0,0,0]</div></div>
+      <div class="field"><label>Datos año anterior (12 meses)</label><textarea id="s-loyalty-chart-prev" placeholder="[0,0,0,0,0,0,0,0,0,0,0,0]"></textarea></div>
+      <div class="field"><label>Año actual</label><input type="text" id="s-loyalty-year-current" placeholder="2026"></div>
+      <div class="field"><label>Año anterior</label><input type="text" id="s-loyalty-year-prev" placeholder="2025"></div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Análisis</h3>
+      <div class="field"><label>Análisis y conclusiones</label><textarea id="s-analisis" placeholder="Insights del mes..."></textarea></div>
+    </div>
+
+    <!-- THREE AMIGOS -->
+    <div class="edit-section brand-section-threeamigos"><h3>Mes</h3><div class="field"><label>Período</label><input type="text" id="ta-mes" placeholder="Ej: Marzo 2026"></div></div>
+    <div class="edit-section brand-section-threeamigos"><h3>Resumen Ejecutivo</h3><div class="field"><label>Resumen narrativo</label><textarea id="ta-resumen"></textarea></div></div>
+    <div class="edit-section brand-section-threeamigos"><h3>Orgánico</h3><div class="field"><label>Nuevos seguidores</label><input type="number" id="ta-org-seguidores"></div><div class="field"><label>Alcance</label><input type="number" id="ta-org-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="ta-org-engagement"></div></div>
+    <div class="edit-section brand-section-threeamigos full-width">
+      <h3>Top 3 Posts</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="field"><label>Descripción</label><input type="text" id="ta-p1-desc"></div><div class="field"><label>Alcance</label><input type="number" id="ta-p1-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="ta-p1-engagement"></div><div class="field"><label>Link</label><input type="text" id="ta-p1-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="ta-p2-desc"></div><div class="field"><label>Alcance</label><input type="number" id="ta-p2-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="ta-p2-engagement"></div><div class="field"><label>Link</label><input type="text" id="ta-p2-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="ta-p3-desc"></div><div class="field"><label>Alcance</label><input type="number" id="ta-p3-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="ta-p3-engagement"></div><div class="field"><label>Link</label><input type="text" id="ta-p3-link"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-threeamigos full-width">
+      <h3>Campañas</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+        <div><div class="field"><label>Nombre</label><input type="text" id="ta-camp1-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="ta-camp1-fecha"></div><div class="field"><label>Segmento</label><select id="ta-camp1-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="ta-camp1-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="ta-camp1-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="ta-camp1-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="ta-camp1-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="ta-camp2-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="ta-camp2-fecha"></div><div class="field"><label>Segmento</label><select id="ta-camp2-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="ta-camp2-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="ta-camp2-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="ta-camp2-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="ta-camp2-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="ta-camp3-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="ta-camp3-fecha"></div><div class="field"><label>Segmento</label><select id="ta-camp3-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="ta-camp3-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="ta-camp3-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="ta-camp3-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="ta-camp3-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="ta-camp4-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="ta-camp4-fecha"></div><div class="field"><label>Segmento</label><select id="ta-camp4-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="ta-camp4-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="ta-camp4-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="ta-camp4-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="ta-camp4-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="ta-camp5-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="ta-camp5-fecha"></div><div class="field"><label>Segmento</label><select id="ta-camp5-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="ta-camp5-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="ta-camp5-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="ta-camp5-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="ta-camp5-ventas"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-threeamigos full-width"><h3>Análisis</h3><div class="field"><label>Análisis y conclusiones</label><textarea id="ta-analisis"></textarea></div></div>
+
+    <!-- LA CASETA -->
+    <div class="edit-section brand-section-lacaseta"><h3>Mes</h3><div class="field"><label>Período</label><input type="text" id="lc-mes" placeholder="Ej: Marzo 2026"></div></div>
+    <div class="edit-section brand-section-lacaseta"><h3>Resumen Ejecutivo</h3><div class="field"><label>Resumen narrativo</label><textarea id="lc-resumen"></textarea></div></div>
+    <div class="edit-section brand-section-lacaseta"><h3>Orgánico</h3><div class="field"><label>Nuevos seguidores</label><input type="number" id="lc-org-seguidores"></div><div class="field"><label>Alcance</label><input type="number" id="lc-org-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="lc-org-engagement"></div></div>
+    <div class="edit-section brand-section-lacaseta full-width">
+      <h3>Top 3 Posts</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="field"><label>Descripción</label><input type="text" id="lc-p1-desc"></div><div class="field"><label>Alcance</label><input type="number" id="lc-p1-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="lc-p1-engagement"></div><div class="field"><label>Link</label><input type="text" id="lc-p1-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="lc-p2-desc"></div><div class="field"><label>Alcance</label><input type="number" id="lc-p2-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="lc-p2-engagement"></div><div class="field"><label>Link</label><input type="text" id="lc-p2-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="lc-p3-desc"></div><div class="field"><label>Alcance</label><input type="number" id="lc-p3-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="lc-p3-engagement"></div><div class="field"><label>Link</label><input type="text" id="lc-p3-link"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-lacaseta full-width">
+      <h3>Campañas</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+        <div><div class="field"><label>Nombre</label><input type="text" id="lc-camp1-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="lc-camp1-fecha"></div><div class="field"><label>Segmento</label><select id="lc-camp1-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="lc-camp1-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="lc-camp1-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="lc-camp1-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="lc-camp1-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="lc-camp2-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="lc-camp2-fecha"></div><div class="field"><label>Segmento</label><select id="lc-camp2-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="lc-camp2-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="lc-camp2-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="lc-camp2-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="lc-camp2-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="lc-camp3-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="lc-camp3-fecha"></div><div class="field"><label>Segmento</label><select id="lc-camp3-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="lc-camp3-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="lc-camp3-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="lc-camp3-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="lc-camp3-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="lc-camp4-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="lc-camp4-fecha"></div><div class="field"><label>Segmento</label><select id="lc-camp4-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="lc-camp4-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="lc-camp4-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="lc-camp4-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="lc-camp4-ventas"></div></div>
+        <div><div class="field"><label>Nombre</label><input type="text" id="lc-camp5-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="lc-camp5-fecha"></div><div class="field"><label>Segmento</label><select id="lc-camp5-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div class="field"><label>Enviados</label><input type="number" id="lc-camp5-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="lc-camp5-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="lc-camp5-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="lc-camp5-ventas"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-lacaseta full-width"><h3>Análisis</h3><div class="field"><label>Análisis y conclusiones</label><textarea id="lc-analisis"></textarea></div></div>
+
+    <!-- MABI -->
+    <div class="edit-section brand-section-mabi"><h3>Mes</h3><div class="field"><label>Período</label><input type="text" id="mb-mes" placeholder="Ej: Marzo 2026"></div></div>
+    <div class="edit-section brand-section-mabi"><h3>Resumen Ejecutivo</h3><div class="field"><label>Resumen narrativo</label><textarea id="mb-resumen"></textarea></div></div>
+    <div class="edit-section brand-section-mabi"><h3>Orgánico</h3><div class="field"><label>Nuevos seguidores</label><input type="number" id="mb-org-seguidores"></div><div class="field"><label>Alcance</label><input type="number" id="mb-org-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="mb-org-engagement"></div></div>
+    <div class="edit-section brand-section-mabi full-width">
+      <h3>Top 3 Posts</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="field"><label>Descripción</label><input type="text" id="mb-p1-desc"></div><div class="field"><label>Alcance</label><input type="number" id="mb-p1-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="mb-p1-engagement"></div><div class="field"><label>Link</label><input type="text" id="mb-p1-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="mb-p2-desc"></div><div class="field"><label>Alcance</label><input type="number" id="mb-p2-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="mb-p2-engagement"></div><div class="field"><label>Link</label><input type="text" id="mb-p2-link"></div></div>
+        <div><div class="field"><label>Descripción</label><input type="text" id="mb-p3-desc"></div><div class="field"><label>Alcance</label><input type="number" id="mb-p3-alcance"></div><div class="field"><label>Engagement</label><input type="number" id="mb-p3-engagement"></div><div class="field"><label>Link</label><input type="text" id="mb-p3-link"></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-mabi full-width"><h3>Análisis</h3><div class="field"><label>Análisis y conclusiones</label><textarea id="mb-analisis"></textarea></div></div>
+
+  </div>
+  <div class="edit-footer">
+    <button class="btn-secondary" onclick="toggleEditPanel()">✕ Cerrar</button>
+    <button class="btn-primary" onclick="applyData()">✓ Actualizar informe</button>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div id="report">
+
+  <!-- SABOR -->
+  <div class="brand-section brand-section-sabor active">
+    <div class="cover">
+      <div class="cover-logo"><div class="cover-group">RAYDAL Hospitality</div><div class="cover-brand" id="r-sabor-brand">Sabor</div></div>
+      <div class="cover-meta"><div class="cover-meta-item"><div class="cover-meta-label">Período</div><div class="cover-meta-value" id="r-sabor-mes">Marzo 2026</div></div></div>
+      <div class="cover-accent"></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-sabor-resumen">—</p></div></div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Paid Media</div></div>
+      <div class="paid-media-grid">
+        <div class="media-card"><div class="media-title">Google Ads</div><div class="metric-box"><div class="metric-label">Inversión</div><div class="metric-value" id="r-sabor-google-inv">—</div></div><div class="metric-box"><div class="metric-label">Ingresos</div><div class="metric-value" id="r-sabor-google-ing">—</div></div><div class="metric-box"><div class="metric-label">ROAS</div><div class="metric-value" id="r-sabor-google-roas" style="color:var(--primary)">—</div></div></div>
+        <div class="media-card"><div class="media-title">Meta Ads</div><div class="metric-box"><div class="metric-label">Inversión</div><div class="metric-value" id="r-sabor-meta-inv">—</div></div><div class="metric-box"><div class="metric-label">Ingresos</div><div class="metric-value" id="r-sabor-meta-ing">—</div></div><div class="metric-box"><div class="metric-label">ROAS</div><div class="metric-value" id="r-sabor-meta-roas" style="color:var(--primary)">—</div></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Orgánico</div></div>
+      <div class="kpi-grid"><div class="kpi-card"><div class="kpi-value" id="r-sabor-org-seg">—</div><div class="kpi-label">Nuevos Seguidores</div></div><div class="kpi-card"><div class="kpi-value" id="r-sabor-org-alc">—</div><div class="kpi-label">Alcance</div></div><div class="kpi-card"><div class="kpi-value" id="r-sabor-org-eng">—</div><div class="kpi-label">Engagement</div></div></div>
+      <div style="margin-bottom:24px;"><h3 style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Top 3 Carruseles</h3><div class="posts-grid" id="r-sabor-carruseles"></div></div>
+      <div><h3 style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Top 3 Reels</h3><div class="posts-grid" id="r-sabor-reels"></div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Campañas de Email</div></div>
+      <table class="campaigns-table" id="r-sabor-campaigns"><thead><tr><th>Nombre/Asunto</th><th>Fecha</th><th>Canal</th><th>Segmento</th><th>Enviados</th><th>Apertura</th><th>CTR</th><th>Ventas</th><th>Compras</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Automatizaciones</div></div>
+      <div class="automations-grid">
+        <div class="auto-card"><div class="auto-title">🛒 Carrito Abandonado SMS</div><div class="auto-stat"><div class="auto-stat-label">Enviados</div><div class="auto-stat-value" id="r-sabor-cart-sms-env">—</div></div><div class="auto-stat"><div class="auto-stat-label">Recuperados</div><div class="auto-stat-value" id="r-sabor-cart-sms-rec">—</div></div><div class="auto-stat"><div class="auto-stat-label">Ventas</div><div class="auto-stat-value" id="r-sabor-cart-sms-ven">$—</div></div></div>
+        <div class="auto-card"><div class="auto-title">🛒 Carrito Abandonado Email</div><div class="auto-stat"><div class="auto-stat-label">Enviados</div><div class="auto-stat-value" id="r-sabor-cart-email-env">—</div></div><div class="auto-stat"><div class="auto-stat-label">Recuperados</div><div class="auto-stat-value" id="r-sabor-cart-email-rec">—</div></div><div class="auto-stat"><div class="auto-stat-label">Ventas</div><div class="auto-stat-value" id="r-sabor-cart-email-ven">$—</div></div></div>
+        <div class="auto-card"><div class="auto-title">🎁 Post-Compra Loyalty</div><div class="auto-stat"><div class="auto-stat-label">Vistas</div><div class="auto-stat-value" id="r-sabor-loyalty-views">—</div></div><div class="auto-stat"><div class="auto-stat-label">Compras</div><div class="auto-stat-value" id="r-sabor-loyalty-compras">—</div></div><div class="auto-stat"><div class="auto-stat-label">Ventas</div><div class="auto-stat-value" id="r-sabor-loyalty-ven">$—</div></div></div>
+        <div class="auto-card"><div class="auto-title">🔄 Win-back 14 días</div><div class="auto-stat"><div class="auto-stat-label">Enviados</div><div class="auto-stat-value" id="r-sabor-winback-env">—</div></div><div class="auto-stat"><div class="auto-stat-label">Recuperados</div><div class="auto-stat-value" id="r-sabor-winback-rec">—</div></div><div class="auto-stat"><div class="auto-stat-label">Ventas</div><div class="auto-stat-value" id="r-sabor-winback-ven">$—</div></div></div>
+      </div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Loyalty Program</div></div><div class="loyalty-card"><div class="loyalty-title">Nuevos enrolados este mes</div><div class="loyalty-stat" id="r-sabor-loyalty-new">0</div><canvas id="r-sabor-loyalty-canvas"></canvas></div></div>
+    <div class="section"><div class="section-header"><div class="section-title">Análisis</div></div><div class="analysis-card"><p id="r-sabor-analisis">—</p></div></div>
+  </div>
+
+  <!-- THREE AMIGOS -->
+  <div class="brand-section brand-section-threeamigos">
+    <div class="cover" style="--primary:#2D6A4F;">
+      <div class="cover-logo"><div class="cover-group">RAYDAL Hospitality</div><div class="cover-brand" id="r-ta-brand">Three Amigos</div></div>
+      <div class="cover-meta"><div class="cover-meta-item"><div class="cover-meta-label">Período</div><div class="cover-meta-value" id="r-ta-mes">Marzo 2026</div></div></div>
+      <div class="cover-accent"></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-ta-resumen">—</p></div></div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Orgánico</div></div>
+      <div class="kpi-grid"><div class="kpi-card"><div class="kpi-value" id="r-ta-org-seg">—</div><div class="kpi-label">Nuevos Seguidores</div></div><div class="kpi-card"><div class="kpi-value" id="r-ta-org-alc">—</div><div class="kpi-label">Alcance</div></div><div class="kpi-card"><div class="kpi-value" id="r-ta-org-eng">—</div><div class="kpi-label">Engagement</div></div></div>
+      <div><h3 style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Top 3 Posts</h3><div class="posts-grid" id="r-ta-posts"></div></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Campañas</div></div><table class="campaigns-table" id="r-ta-campaigns"><thead><tr><th>Nombre</th><th>Fecha</th><th>Segmento</th><th>Enviados</th><th>Apertura</th><th>CTR</th><th>Ventas</th></tr></thead><tbody></tbody></table></div>
+    <div class="section"><div class="section-header"><div class="section-title">Análisis</div></div><div class="analysis-card"><p id="r-ta-analisis">—</p></div></div>
+  </div>
+
+  <!-- LA CASETA -->
+  <div class="brand-section brand-section-lacaseta">
+    <div class="cover" style="--primary:#B5451B;">
+      <div class="cover-logo"><div class="cover-group">RAYDAL Hospitality</div><div class="cover-brand" id="r-lc-brand">La Caseta</div></div>
+      <div class="cover-meta"><div class="cover-meta-item"><div class="cover-meta-label">Período</div><div class="cover-meta-value" id="r-lc-mes">Marzo 2026</div></div></div>
+      <div class="cover-accent"></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-lc-resumen">—</p></div></div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Orgánico</div></div>
+      <div class="kpi-grid"><div class="kpi-card"><div class="kpi-value" id="r-lc-org-seg">—</div><div class="kpi-label">Nuevos Seguidores</div></div><div class="kpi-card"><div class="kpi-value" id="r-lc-org-alc">—</div><div class="kpi-label">Alcance</div></div><div class="kpi-card"><div class="kpi-value" id="r-lc-org-eng">—</div><div class="kpi-label">Engagement</div></div></div>
+      <div><h3 style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Top 3 Posts</h3><div class="posts-grid" id="r-lc-posts"></div></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Campañas</div></div><table class="campaigns-table" id="r-lc-campaigns"><thead><tr><th>Nombre</th><th>Fecha</th><th>Segmento</th><th>Enviados</th><th>Apertura</th><th>CTR</th><th>Ventas</th></tr></thead><tbody></tbody></table></div>
+    <div class="section"><div class="section-header"><div class="section-title">Análisis</div></div><div class="analysis-card"><p id="r-lc-analisis">—</p></div></div>
+  </div>
+
+  <!-- MABI -->
+  <div class="brand-section brand-section-mabi">
+    <div class="cover" style="--primary:#1B4F72;">
+      <div class="cover-logo"><div class="cover-group">RAYDAL Hospitality</div><div class="cover-brand" id="r-mb-brand">Mabí</div></div>
+      <div class="cover-meta"><div class="cover-meta-item"><div class="cover-meta-label">Período</div><div class="cover-meta-value" id="r-mb-mes">Marzo 2026</div></div></div>
+      <div class="cover-accent"></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-mb-resumen">—</p></div></div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Orgánico</div></div>
+      <div class="kpi-grid"><div class="kpi-card"><div class="kpi-value" id="r-mb-org-seg">—</div><div class="kpi-label">Nuevos Seguidores</div></div><div class="kpi-card"><div class="kpi-value" id="r-mb-org-alc">—</div><div class="kpi-label">Alcance</div></div><div class="kpi-card"><div class="kpi-value" id="r-mb-org-eng">—</div><div class="kpi-label">Engagement</div></div></div>
+      <div><h3 style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Top 3 Posts</h3><div class="posts-grid" id="r-mb-posts"></div></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-title">Análisis</div></div><div class="analysis-card"><p id="r-mb-analisis">—</p></div></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <div>
+      <img src="/logo.svg" alt="En La Nube Agency" style="height:48px;width:auto;display:block;margin-bottom:6px;">
+      <div style="color:rgba(255,255,255,0.35);font-size:11px;font-family:'Montserrat',sans-serif;">Tu equipo de marketing integral</div>
+    </div>
+    <div class="footer-contact"><strong>enlanubeagency.com</strong>jesus@enlanubeagency.com</div>
+  </div>
+
+</div>
+
+<script>
+/* ===== MODO SERVIDOR ===== */
+let serverMode = false;
+
+async function kv_get(key) {
+  if (serverMode) {
+    try {
+      const r = await fetch('/api/kv/' + encodeURIComponent(key), { signal: AbortSignal.timeout(3000) });
+      if (!r.ok) return null;
+      const d = await r.json();
+      return d.value !== undefined ? d.value : null;
+    } catch { return null; }
+  }
+  return localStorage.getItem(key);
+}
+
+async function kv_set(key, value) {
+  if (serverMode) {
+    try {
+      await fetch('/api/kv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value }),
+        signal: AbortSignal.timeout(3000)
+      });
+    } catch {}
+  } else {
+    localStorage.setItem(key, value);
+  }
+}
+
+async function kv_getAll() {
+  if (serverMode) {
+    try {
+      const r = await fetch('/api/kv', { signal: AbortSignal.timeout(5000) });
+      if (r.ok) return await r.json();
+    } catch {}
+    return {};
+  }
+  const result = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('raydal-')) result[k] = localStorage.getItem(k);
+  }
+  return result;
+}
+
+/* ===== ESTADO GLOBAL ===== */
+let currentBrand = 'sabor';
+let charInstance = null;
+const brandColors = { sabor:'#CC2200', threeamigos:'#2D6A4F', lacaseta:'#B5451B', mabi:'#1B4F72' };
+const brandNames  = { sabor:'Sabor', threeamigos:'Three Amigos', lacaseta:'La Caseta', mabi:'Mabí' };
+const data = {};
+
+/* ===== UTILIDADES ===== */
+function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function n(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) || 0 : 0; }
+function fmt(num) { return new Intl.NumberFormat('es-ES').format(Math.round(num)); }
+function fmtK(num) { return num >= 1000 ? (num/1000).toFixed(1)+'K' : fmt(num); }
+function fmtDol(num) { return '$'+fmt(num); }
+function set(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
+
+/* ===== MARCAS ===== */
+async function switchBrand(brandId, skipSave) {
+  if (!skipSave) await saveCurrentMonth();
+  currentBrand = brandId;
+  updateBrandUI();
+  showBrandSection(brandId);
+  await loadBrandLastMonth();
+  loadFromForm();
+  updateReport();
+  await renderMonthSelector();
+}
+
+function updateBrandUI() {
+  document.querySelectorAll('.brand-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.brand-tab[onclick*="${currentBrand}"]`).classList.add('active');
+  const color = brandColors[currentBrand];
+  document.documentElement.style.setProperty('--primary', color);
+  document.querySelectorAll('.brand-tab').forEach(t => {
+    t.style.borderBottomColor = t.classList.contains('active') ? color : 'transparent';
+  });
+}
+
+function showBrandSection(brandId) {
+  document.querySelectorAll('#report .brand-section').forEach(s => s.classList.remove('active'));
+  document.querySelector('#report .brand-section-' + brandId).classList.add('active');
+  document.querySelectorAll('.edit-section').forEach(s => s.classList.remove('hidden'));
+  document.querySelectorAll('.edit-section:not(.brand-section-' + brandId + ')').forEach(s => {
+    if (s.className.includes('brand-section-')) s.classList.add('hidden');
+  });
+}
+
+async function loadBrandLastMonth() {
+  const prefixMap = { sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' };
+  const currentMes = v(prefixMap[currentBrand] + '-mes').trim();
+  if (currentMes) {
+    const raw = await kv_get('raydal-' + currentBrand + '-' + currentMes);
+    if (raw) { deserializeForm(JSON.parse(raw)); return; }
+  }
+  const months = await getSavedMonths();
+  if (months.length > 0) {
+    const raw = await kv_get('raydal-' + currentBrand + '-' + months[months.length - 1]);
+    if (raw) deserializeForm(JSON.parse(raw));
+  }
+}
+
+/* ===== ALMACENAMIENTO ===== */
+async function getSavedMonths() {
+  try { return JSON.parse(await kv_get('raydal-' + currentBrand + '-meses') || '[]'); } catch { return []; }
+}
+
+async function saveCurrentMonth() {
+  const prefixMap = { sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' };
+  const mes = v(prefixMap[currentBrand] + '-mes').trim();
+  if (!mes) return;
+  const months = await getSavedMonths();
+  if (!months.includes(mes)) {
+    months.push(mes);
+    await kv_set('raydal-' + currentBrand + '-meses', JSON.stringify(months));
+  }
+  await kv_set('raydal-' + currentBrand + '-' + mes, JSON.stringify(serializeForm()));
+}
+
+function serializeForm() {
+  const out = {};
+  document.querySelectorAll('#edit-panel .brand-section-' + currentBrand + ' input, #edit-panel .brand-section-' + currentBrand + ' textarea, #edit-panel .brand-section-' + currentBrand + ' select').forEach(el => {
+    if (el.id) out[el.id] = el.value;
+  });
+  return out;
+}
+
+function deserializeForm(saved) {
+  Object.entries(saved).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  if (currentBrand === 'sabor') for (let i = 1; i <= 5; i++) updateCampFields(i);
+}
+
+/* BUG FIX 1: usar prefijo de la marca actual, no buscar en todas */
+async function renderMonthSelector(activeMes) {
+  const sel = document.getElementById('month-selector');
+  if (!sel) return;
+  const months = await getSavedMonths();
+  const prefix = { sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' }[currentBrand];
+  const current = activeMes || v(prefix + '-mes').trim() || 'Marzo 2026';
+  sel.innerHTML = months.length === 0
+    ? '<option value="' + current + '">' + current + '</option>'
+    : months.map(m => '<option value="' + m + '"' + (m === current ? ' selected' : '') + '>' + m + '</option>').join('');
+}
+
+async function switchToMonth(mes) {
+  await saveCurrentMonth();
+  const raw = await kv_get('raydal-' + currentBrand + '-' + mes);
+  if (!raw) return;
+  deserializeForm(JSON.parse(raw));
+  loadFromForm();
+  updateReport();
+}
+
+/* BUG FIX 2: guardar mes vacío inmediatamente para que persista */
+async function newMonth() {
+  const mes = prompt('¿Nombre del nuevo mes?\nEj: Abril 2026');
+  if (!mes || !mes.trim()) return;
+  const mesNuevo = mes.trim();
+
+  await saveCurrentMonth(); // guardar mes actual antes de limpiar
+
+  const months = await getSavedMonths();
+  if (!months.includes(mesNuevo)) {
+    months.push(mesNuevo);
+    await kv_set('raydal-' + currentBrand + '-meses', JSON.stringify(months));
+  }
+
+  const prefix = { sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' }[currentBrand];
+  document.querySelectorAll('#edit-panel input[id^="' + prefix + '-"], #edit-panel textarea[id^="' + prefix + '-"], #edit-panel select[id^="' + prefix + '-"]').forEach(el => { el.value = ''; });
+  document.getElementById(prefix + '-mes').value = mesNuevo;
+
+  await saveCurrentMonth(); // guardar el mes nuevo vacío (CORRECCIÓN DEL BUG)
+
+  await renderMonthSelector(mesNuevo);
+  loadFromForm();
+  updateReport();
+  document.getElementById('edit-panel').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+/* ===== EXPORTAR HTML STANDALONE ===== */
+async function exportHTML() {
+  const allData = await kv_getAll();
+  const injected = '<script>(function(){var d=' + JSON.stringify(allData) + ';Object.keys(d).forEach(function(k){localStorage.setItem(k,d[k]);});}());<\/script>';
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const exported = html.replace('</body>', injected + '\n</body>');
+  const blob = new Blob([exported], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'raydal-informe.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function toggleEditPanel() { document.getElementById('edit-panel').classList.toggle('hidden'); }
+
+async function applyData() {
+  await saveCurrentMonth();
+  loadFromForm();
+  updateReport();
+  document.getElementById('edit-panel').classList.add('hidden');
+}
+
+/* ===== CARGAR DATOS DEL FORMULARIO ===== */
+function loadFromForm() {
+  if (currentBrand === 'sabor') {
+    data.mes = v('s-mes');
+    data.resumen = v('s-resumen');
+    data.google = { inversion: n('s-google-inversion'), ingresos: n('s-google-ingresos'), roas: n('s-google-roas') };
+    data.meta   = { inversion: n('s-meta-inversion'),   ingresos: n('s-meta-ingresos'),   roas: n('s-meta-roas') };
+    data.org = { seguidores: n('s-org-seguidores'), alcance: n('s-org-alcance'), engagement: n('s-org-engagement') };
+    data.carruseles = [1,2,3].map(i => ({ desc:v('s-car'+i+'-desc'), alcance:n('s-car'+i+'-alcance'), engagement:n('s-car'+i+'-engagement'), guardados:n('s-car'+i+'-guardados'), link:v('s-car'+i+'-link') })).filter(p=>p.desc.trim());
+    data.reels      = [1,2,3].map(i => ({ desc:v('s-ree'+i+'-desc'), alcance:n('s-ree'+i+'-alcance'), reproducciones:n('s-ree'+i+'-reproducciones'), guardados:n('s-ree'+i+'-guardados'), link:v('s-ree'+i+'-link') })).filter(p=>p.desc.trim());
+    data.campaigns  = [1,2,3,4,5].map(i => ({ nombre:v('s-camp'+i+'-nombre'), fecha:v('s-camp'+i+'-fecha'), canal:v('s-camp'+i+'-canal'), segmento:v('s-camp'+i+'-segmento'), enviados:n('s-camp'+i+'-enviados'), apertura:n('s-camp'+i+'-apertura'), ctr:n('s-camp'+i+'-ctr'), ventas:n('s-camp'+i+'-ventas'), compras:n('s-camp'+i+'-compras'), smsEnv:n('s-camp'+i+'-sms-env'), smsCtr:n('s-camp'+i+'-sms-ctr'), smsVentas:n('s-camp'+i+'-sms-ventas') })).filter(c=>c.nombre.trim());
+    data.automations = {
+      cartSms:   { enviados:n('s-cart-sms-enviados'),   recuperados:n('s-cart-sms-recuperados'),   ventas:n('s-cart-sms-ventas') },
+      cartEmail: { enviados:n('s-cart-email-enviados'), recuperados:n('s-cart-email-recuperados'), ventas:n('s-cart-email-ventas') },
+      loyalty:   { views:n('s-loyalty-views'), compras:n('s-loyalty-compras'), ventas:n('s-loyalty-ventas') },
+      winback:   { enviados:n('s-winback-enviados'), recuperados:n('s-winback-recuperados'), ventas:n('s-winback-ventas') }
+    };
+    data.loyaltyProgram = (function() {
+      const enrolados  = n('s-loyalty-enrolados');
+      const chartData  = tryParseJSON(v('s-loyalty-chart-data')) || Array(12).fill(0);
+      while (chartData.length < 12) chartData.push(0);
+      const mesIdx = { enero:0,january:0,febrero:1,february:1,marzo:2,march:2,abril:3,april:3,mayo:4,may:4,junio:5,june:5,julio:6,july:6,agosto:7,august:7,septiembre:8,september:8,octubre:9,october:9,noviembre:10,november:10,diciembre:11,december:11 };
+      const idx = mesIdx[(data.mes||'').toLowerCase().split(' ')[0]];
+      if (idx !== undefined && enrolados > 0) chartData[idx] = enrolados;
+      return { enrolados, chartData, chartPrev: tryParseJSON(v('s-loyalty-chart-prev')) || [], yearCurrent: v('s-loyalty-year-current')||'2026', yearPrev: v('s-loyalty-year-prev')||'2025' };
+    })();
+    data.analisis = v('s-analisis');
+  } else if (currentBrand === 'threeamigos') {
+    data.mes = v('ta-mes'); data.resumen = v('ta-resumen');
+    data.org = { seguidores:n('ta-org-seguidores'), alcance:n('ta-org-alcance'), engagement:n('ta-org-engagement') };
+    data.posts     = [1,2,3].map(i=>({ desc:v('ta-p'+i+'-desc'), alcance:n('ta-p'+i+'-alcance'), engagement:n('ta-p'+i+'-engagement'), link:v('ta-p'+i+'-link') })).filter(p=>p.desc.trim());
+    data.campaigns = [1,2,3,4,5].map(i=>({ nombre:v('ta-camp'+i+'-nombre'), fecha:v('ta-camp'+i+'-fecha'), segmento:v('ta-camp'+i+'-segmento'), enviados:n('ta-camp'+i+'-enviados'), apertura:n('ta-camp'+i+'-apertura'), ctr:n('ta-camp'+i+'-ctr'), ventas:n('ta-camp'+i+'-ventas') })).filter(c=>c.nombre.trim());
+    data.analisis  = v('ta-analisis');
+  } else if (currentBrand === 'lacaseta') {
+    data.mes = v('lc-mes'); data.resumen = v('lc-resumen');
+    data.org = { seguidores:n('lc-org-seguidores'), alcance:n('lc-org-alcance'), engagement:n('lc-org-engagement') };
+    data.posts     = [1,2,3].map(i=>({ desc:v('lc-p'+i+'-desc'), alcance:n('lc-p'+i+'-alcance'), engagement:n('lc-p'+i+'-engagement'), link:v('lc-p'+i+'-link') })).filter(p=>p.desc.trim());
+    data.campaigns = [1,2,3,4,5].map(i=>({ nombre:v('lc-camp'+i+'-nombre'), fecha:v('lc-camp'+i+'-fecha'), segmento:v('lc-camp'+i+'-segmento'), enviados:n('lc-camp'+i+'-enviados'), apertura:n('lc-camp'+i+'-apertura'), ctr:n('lc-camp'+i+'-ctr'), ventas:n('lc-camp'+i+'-ventas') })).filter(c=>c.nombre.trim());
+    data.analisis  = v('lc-analisis');
+  } else {
+    data.mes = v('mb-mes'); data.resumen = v('mb-resumen');
+    data.org = { seguidores:n('mb-org-seguidores'), alcance:n('mb-org-alcance'), engagement:n('mb-org-engagement') };
+    data.posts    = [1,2,3].map(i=>({ desc:v('mb-p'+i+'-desc'), alcance:n('mb-p'+i+'-alcance'), engagement:n('mb-p'+i+'-engagement'), link:v('mb-p'+i+'-link') })).filter(p=>p.desc.trim());
+    data.analisis = v('mb-analisis');
+  }
+}
+
+function tryParseJSON(str) {
+  if (!str || !str.trim()) return null;
+  try { return JSON.parse(str); } catch {
+    try { return JSON.parse('[' + str.trim() + ']'); } catch { return null; }
+  }
+}
+
+/* ===== RENDERIZAR INFORME ===== */
+function updateReport() {
+  const prefix = currentBrand === 'sabor' ? 'sabor' : (currentBrand === 'threeamigos' ? 'ta' : (currentBrand === 'lacaseta' ? 'lc' : 'mb'));
+  const r = 'r-' + prefix + '-';
+  set(r+'brand', brandNames[currentBrand]);
+  set(r+'mes', data.mes || 'Marzo 2026');
+  if (currentBrand === 'sabor') {
+    set(r+'resumen', data.resumen||'—');
+    set(r+'google-inv',  data.google.inversion > 0 ? fmtDol(data.google.inversion) : '—');
+    set(r+'google-ing',  data.google.ingresos  > 0 ? fmtDol(data.google.ingresos)  : '—');
+    set(r+'google-roas', data.google.roas      > 0 ? data.google.roas.toFixed(2)+'x' : '—');
+    set(r+'meta-inv',    data.meta.inversion   > 0 ? fmtDol(data.meta.inversion)   : '—');
+    set(r+'meta-ing',    data.meta.ingresos    > 0 ? fmtDol(data.meta.ingresos)    : '—');
+    set(r+'meta-roas',   data.meta.roas        > 0 ? data.meta.roas.toFixed(2)+'x' : '—');
+    set(r+'org-seg', data.org.seguidores > 0 ? fmt(data.org.seguidores) : '—');
+    set(r+'org-alc', data.org.alcance    > 0 ? fmtK(data.org.alcance)  : '—');
+    set(r+'org-eng', data.org.engagement > 0 ? fmt(data.org.engagement) : '—');
+    renderPostsGrid(r+'carruseles', data.carruseles, '🖼️ Carrusel');
+    renderPostsGrid(r+'reels', data.reels, '🎬 Reel');
+    renderCampaignsTable(r+'campaigns', data.campaigns, true);
+    renderAutomations('sabor', data.automations);
+    renderLoyaltyChart('sabor', data.loyaltyProgram);
+    set(r+'analisis', data.analisis||'—');
+  } else {
+    set(r+'resumen', data.resumen||'—');
+    set(r+'org-seg', data.org.seguidores > 0 ? fmt(data.org.seguidores) : '—');
+    set(r+'org-alc', data.org.alcance    > 0 ? fmtK(data.org.alcance)  : '—');
+    set(r+'org-eng', data.org.engagement > 0 ? fmt(data.org.engagement) : '—');
+    if (data.posts) renderPostsGrid(r+'posts', data.posts, '📸 Post');
+    if (data.campaigns) renderCampaignsTable(r+'campaigns', data.campaigns, false);
+    set(r+'analisis', data.analisis||'—');
+  }
+}
+
+function renderPostsGrid(containerId, posts, formatLabel) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = (posts||[]).map(p => '<div class="post-card"><div class="post-format">'+formatLabel+'</div><div class="post-desc">'+p.desc+'</div><div class="post-metrics">Alcance: '+fmt(p.alcance)+'<br>'+(p.reproducciones!==undefined?'Reproducciones: '+fmt(p.reproducciones)+'<br>':'')+'Engagement: '+fmt(p.engagement)+'<br>'+(p.guardados!==undefined?'Guardados: '+fmt(p.guardados)+'<br>':'')+'</div>'+(p.link?'<a href="'+p.link+'" target="_blank" class="post-link">Ver post</a>':'')+'</div>').join('');
+}
+
+function renderCampaignsTable(containerId, campaigns, withCompras) {
+  const tbody = document.querySelector('#'+containerId+' tbody');
+  if (!tbody) return;
+  tbody.innerHTML = (campaigns||[]).map(c => {
+    const seg = c.segmento ? '<span style="font-size:10px;padding:2px 7px;border-radius:3px;background:rgba(0,0,0,0.07);color:var(--gray-600);font-weight:600;">'+c.segmento+'</span>' : '—';
+    const canalClass = c.canal==='Email'?'email':c.canal==='SMS'?'sms':'both';
+    if (withCompras && c.canal==='Email+SMS') {
+      return '<tr><td>'+c.nombre+'</td><td style="white-space:nowrap;">'+c.fecha+'</td><td><span class="canal-badge canal-both">Email+SMS</span></td><td>'+seg+'</td><td style="font-size:11px;line-height:1.8;">✉ '+(c.enviados>0?fmt(c.enviados):'—')+'<br>📱 '+(c.smsEnv>0?fmt(c.smsEnv):'—')+'</td><td>'+(c.apertura>0?c.apertura.toFixed(2)+'%':'—')+'</td><td style="font-size:11px;line-height:1.8;">'+(c.ctr>0?c.ctr.toFixed(2)+'%':'—')+'<br>'+(c.smsCtr>0?c.smsCtr.toFixed(2)+'%':'—')+'</td><td style="font-size:11px;line-height:1.8;">✉ '+(c.ventas>0?fmtDol(c.ventas):'—')+'<br>📱 '+(c.smsVentas>0?fmtDol(c.smsVentas):'—')+'</td><td>'+(c.compras>0?fmt(c.compras):'—')+'</td></tr>';
+    }
+    return '<tr><td>'+c.nombre+'</td><td style="white-space:nowrap;">'+c.fecha+'</td>'+(withCompras?'<td><span class="canal-badge canal-'+canalClass+'">'+(c.canal||'—')+'</span></td>':'')+'<td>'+seg+'</td><td>'+(c.enviados>0?fmt(c.enviados):'—')+'</td><td>'+(c.apertura>0?c.apertura.toFixed(2)+'%':'—')+'</td><td>'+(c.ctr>0?c.ctr.toFixed(2)+'%':'—')+'</td><td>'+(c.ventas>0?fmtDol(c.ventas):'—')+'</td>'+(withCompras?'<td>'+(c.compras>0?fmt(c.compras):'—')+'</td>':'')+'</tr>';
+  }).join('');
+}
+
+function renderAutomations(prefix, autos) {
+  const r = 'r-'+prefix+'-';
+  set(r+'cart-sms-env',    autos.cartSms.enviados    > 0 ? fmt(autos.cartSms.enviados)    : '—');
+  set(r+'cart-sms-rec',    autos.cartSms.recuperados > 0 ? fmt(autos.cartSms.recuperados) : '—');
+  set(r+'cart-sms-ven',    autos.cartSms.ventas      > 0 ? fmtDol(autos.cartSms.ventas)   : '$—');
+  set(r+'cart-email-env',  autos.cartEmail.enviados    > 0 ? fmt(autos.cartEmail.enviados)    : '—');
+  set(r+'cart-email-rec',  autos.cartEmail.recuperados > 0 ? fmt(autos.cartEmail.recuperados) : '—');
+  set(r+'cart-email-ven',  autos.cartEmail.ventas      > 0 ? fmtDol(autos.cartEmail.ventas)   : '$—');
+  set(r+'loyalty-views',   autos.loyalty.views   > 0 ? fmt(autos.loyalty.views)   : '—');
+  set(r+'loyalty-compras', autos.loyalty.compras > 0 ? fmt(autos.loyalty.compras) : '—');
+  set(r+'loyalty-ven',     autos.loyalty.ventas  > 0 ? fmtDol(autos.loyalty.ventas) : '$—');
+  set(r+'winback-env',     autos.winback.enviados    > 0 ? fmt(autos.winback.enviados)    : '—');
+  set(r+'winback-rec',     autos.winback.recuperados > 0 ? fmt(autos.winback.recuperados) : '—');
+  set(r+'winback-ven',     autos.winback.ventas      > 0 ? fmtDol(autos.winback.ventas)   : '$—');
+}
+
+function renderLoyaltyChart(prefix, loy) {
+  set('r-'+prefix+'-loyalty-new', fmt(loy.enrolados)||'0');
+  if (!loy.chartData || loy.chartData.length === 0) return;
+  const canvas = document.getElementById('r-'+prefix+'-loyalty-canvas');
+  if (!canvas) return;
+  if (charInstance) charInstance.destroy();
+  charInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+      datasets: [
+        { label: loy.yearCurrent, data: loy.chartData, backgroundColor: brandColors[currentBrand], borderRadius: 6, barPercentage: 0.7 },
+        { label: loy.yearPrev,    data: loy.chartPrev,  backgroundColor: '#aaaaaa', borderRadius: 6, barPercentage: 0.7 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function updateCampFields(i) {
+  const canal = v('s-camp'+i+'-canal');
+  const ef = document.getElementById('s-camp'+i+'-ef');
+  const sf = document.getElementById('s-camp'+i+'-sf');
+  if (ef) ef.style.display = canal==='SMS' ? 'none' : '';
+  if (sf) sf.style.display = (canal==='Email+SMS'||canal==='SMS') ? '' : 'none';
+}
+
+/* ===== INICIALIZACIÓN ===== */
+window.addEventListener('DOMContentLoaded', async () => {
+  // Detectar modo servidor
+  try {
+    const r = await fetch('/api/health', { signal: AbortSignal.timeout(800) });
+    serverMode = r.ok;
+  } catch { serverMode = false; }
+  const badge = document.getElementById('server-badge');
+  if (badge) {
+    badge.textContent = serverMode ? '● Servidor' : '● Local';
+    badge.className = 'server-badge ' + (serverMode ? 'online' : 'offline');
+  }
+
+  const sv = (id, val) => { const el = document.getElementById(id); if (el && val !== '' && val !== undefined) el.value = val; };
+
+  // Poner mes por defecto para marcas sin datos
+  for (const [b, p] of Object.entries({ sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' })) {
+    const raw = await kv_get('raydal-'+b+'-meses');
+    if (!raw || JSON.parse(raw).length === 0) sv(p+'-mes', 'Marzo 2026');
+  }
+
+  // Datos iniciales Sabor (solo si no existe)
+  if (!await kv_get('raydal-sabor-Marzo 2026')) {
+    sv('s-mes', 'Marzo 2026');
+    const camps = [
+      { nombre:'$10 Off When You Spend $35.', fecha:'03/02/2026', canal:'Email', seg:'Lapsed Customer', env:28403, ap:44.98, ctr:0.8, ven:8125, com:260, se:'', sc:'', sv2:'' },
+      { nombre:'Informational: Promote Sabor Saver Box', fecha:'03/09/2026', canal:'Email+SMS', seg:'Everyone', env:133099, ap:42, ctr:0.45, ven:36173, com:1428, se:64541, sc:15.2, sv2:71338 },
+      { nombre:'Double Points on Value Meals', fecha:'03/16/2026', canal:'Email+SMS', seg:'Loyalty Customer', env:53830, ap:40, ctr:0.21, ven:21051, com:911, se:64739, sc:15.1, sv2:69000 },
+      { nombre:'Savings week: $10 Sabor Power Green Bowl', fecha:'03/23/2026', canal:'Email+SMS', seg:'Everyone', env:132737, ap:38, ctr:0.31, ven:28192, com:1202, se:65359, sc:15.5, sv2:63573 },
+      { nombre:'Informational: Promote Variety Pack', fecha:'03/30/2026', canal:'Email+SMS', seg:'Everyone', env:'', ap:'', ctr:'', ven:'', com:'', se:'', sc:'', sv2:'' }
+    ];
+    camps.forEach((c,idx) => {
+      const i=idx+1;
+      sv('s-camp'+i+'-nombre',c.nombre); sv('s-camp'+i+'-fecha',c.fecha); sv('s-camp'+i+'-canal',c.canal); sv('s-camp'+i+'-segmento',c.seg);
+      sv('s-camp'+i+'-enviados',c.env); sv('s-camp'+i+'-apertura',c.ap); sv('s-camp'+i+'-ctr',c.ctr); sv('s-camp'+i+'-ventas',c.ven); sv('s-camp'+i+'-compras',c.com);
+      sv('s-camp'+i+'-sms-env',c.se); sv('s-camp'+i+'-sms-ctr',c.sc); sv('s-camp'+i+'-sms-ventas',c.sv2);
+      updateCampFields(i);
+    });
+    sv('s-google-inversion',2000); sv('s-google-ingresos',46356); sv('s-google-roas',28);
+    sv('s-meta-inversion',1000); sv('s-meta-ingresos',12064); sv('s-meta-roas',11);
+    sv('s-cart-sms-enviados',583); sv('s-cart-sms-recuperados',73); sv('s-cart-sms-ventas',1449);
+    sv('s-cart-email-enviados',406); sv('s-cart-email-recuperados',27); sv('s-cart-email-ventas',509);
+    sv('s-loyalty-views',532); sv('s-loyalty-compras',40); sv('s-loyalty-ventas',439);
+    sv('s-winback-enviados',0); sv('s-winback-recuperados',0); sv('s-winback-ventas',0);
+    sv('s-loyalty-enrolados',1980);
+    sv('s-loyalty-chart-data','[1300,1286,1980,0,0,0,0,0,0,0,0,0]');
+    sv('s-loyalty-chart-prev','[585,1045,1355,1435,1421,1328,1357,1419,1255,1263,1034,1245]');
+    sv('s-loyalty-year-current','2026'); sv('s-loyalty-year-prev','2025');
+  }
+
+  // Three Amigos
+  if (!await kv_get('raydal-threeamigos-Marzo 2026')) {
+    sv('ta-mes','Marzo 2026');
+    [['Informational: Promote Enchiladas','03/04/2026','Everyone',9856,45,0.33,4011],
+     ['$10 Off your next purchase','03/09/2026','Lapsed Customer',8340,42,0.74,1257],
+     ['$2off any Plato Tradicional','03/16/2026','Everyone',9857,41,0.32,3254],
+     ['Informational: Promote Catering','03/26/2026','Everyone',9794,42,0.16,1143]].forEach((c,idx)=>{
+      const i=idx+1;
+      sv('ta-camp'+i+'-nombre',c[0]); sv('ta-camp'+i+'-fecha',c[1]); sv('ta-camp'+i+'-segmento',c[2]);
+      sv('ta-camp'+i+'-enviados',c[3]); sv('ta-camp'+i+'-apertura',c[4]); sv('ta-camp'+i+'-ctr',c[5]); sv('ta-camp'+i+'-ventas',c[6]);
+    });
+  }
+
+  // La Caseta
+  if (!await kv_get('raydal-lacaseta-Marzo 2026')) {
+    sv('lc-mes','Marzo 2026');
+    [['Informational: Promote Empanadas','03/09/2026','Everyone',4637,43,0.29,233],
+     ['$5 Off your next purchase','03/16/2026','Lapsed Customer',3875,39,0.43,153],
+     ['Informational: Promote try all','03/25/2026','Everyone',4576,41,0.21,551]].forEach((c,idx)=>{
+      const i=idx+1;
+      sv('lc-camp'+i+'-nombre',c[0]); sv('lc-camp'+i+'-fecha',c[1]); sv('lc-camp'+i+'-segmento',c[2]);
+      sv('lc-camp'+i+'-enviados',c[3]); sv('lc-camp'+i+'-apertura',c[4]); sv('lc-camp'+i+'-ctr',c[5]); sv('lc-camp'+i+'-ventas',c[6]);
+    });
+  }
+
+  if (!await kv_get('raydal-mabi-Marzo 2026')) sv('mb-mes','Marzo 2026');
+
+  await renderMonthSelector();
+  await switchBrand('sabor', true);
+});
+</script>
+</body>
+</html>

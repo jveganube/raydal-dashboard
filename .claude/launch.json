@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "raydal-dashboard (dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "raydal-dashboard", "run", "dev"],
+      "port": 3002
+    },
+    {
+      "name": "raydal-dashboard (start)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "raydal-dashboard", "start"],
+      "port": 3002
+    }
+  ]
+}
