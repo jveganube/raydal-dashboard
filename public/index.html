@@ -54,7 +54,10 @@
     .server-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
     .server-badge.online { background: rgba(0,200,150,0.15); color: #00C896; }
     .server-badge.offline { background: rgba(255,71,87,0.15); color: #FF4757; }
-    @media print { #toolbar, #edit-panel { display: none !important; } }
+    @media print { #toolbar, #edit-panel, .cliente-banner { display: none !important; } }
+    .cliente-mode .edit-only { display: none !important; }
+    .cliente-banner { background: #1363FB; color: white; text-align: center; padding: 7px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; }
+    .btn-cliente { background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); padding: 7px 14px; border-radius: 7px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11px; cursor: pointer; }
 
     .brand-tabs { display: flex; gap: 0; background: var(--gray-800); padding: 0 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .brand-tab { flex: 1; padding: 12px 16px; border: none; background: transparent; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
@@ -146,17 +149,21 @@
   </div>
   <div class="toolbar-actions">
     <span id="server-badge" class="server-badge offline">● Local</span>
-    <div class="toolbar-divider"></div>
-    <button class="btn-edit" onclick="toggleEditPanel()">✎ Editar</button>
+    <div class="toolbar-divider edit-only"></div>
+    <button class="btn-edit edit-only" onclick="toggleEditPanel()">✎ Editar</button>
     <div class="toolbar-divider"></div>
     <select id="month-selector" class="month-selector" onchange="switchToMonth(this.value)"></select>
-    <button class="btn-new-month" onclick="newMonth()">＋ Nuevo mes</button>
-    <div class="toolbar-divider"></div>
-    <button class="btn-print" onclick="exportHTML()" style="background:#1d4ed8;">⬇ Exportar HTML</button>
+    <button class="btn-new-month edit-only" onclick="newMonth()">＋ Nuevo mes</button>
+    <div class="toolbar-divider edit-only"></div>
+    <button class="btn-cliente edit-only" onclick="copyClientLink()">🔗 Link cliente</button>
+    <div class="toolbar-divider edit-only"></div>
+    <button class="btn-print edit-only" onclick="exportHTML()" style="background:#1d4ed8;">⬇ Exportar HTML</button>
     <div class="toolbar-divider"></div>
     <button class="btn-print" onclick="window.print()">📄 Imprimir</button>
   </div>
 </div>
+
+<div class="cliente-banner" id="cliente-banner" style="display:none;">👁️ Vista de cliente — solo lectura</div>
 
 <!-- BRAND TABS -->
 <div class="brand-tabs">
@@ -194,6 +201,10 @@
       <div class="field"><label>Inversión ($)</label><input type="number" id="s-meta-inversion"></div>
       <div class="field"><label>Ingresos ($)</label><input type="number" id="s-meta-ingresos"></div>
       <div class="field"><label>ROAS</label><input type="number" id="s-meta-roas" step="0.01"></div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Análisis Paid Media</h3>
+      <div class="field"><label>Notas e insights sobre Google Ads y Meta Ads</label><textarea id="s-paid-analisis" placeholder="Ej: Google salió del aprendizaje, Meta con CPL eficiente en lower funnel..."></textarea></div>
     </div>
     <div class="edit-section brand-section-sabor">
       <h3>Orgánico</h3>
@@ -335,6 +346,7 @@
         <div class="media-card"><div class="media-title">Google Ads</div><div class="metric-box"><div class="metric-label">Inversión</div><div class="metric-value" id="r-sabor-google-inv">—</div></div><div class="metric-box"><div class="metric-label">Ingresos</div><div class="metric-value" id="r-sabor-google-ing">—</div></div><div class="metric-box"><div class="metric-label">ROAS</div><div class="metric-value" id="r-sabor-google-roas" style="color:var(--primary)">—</div></div></div>
         <div class="media-card"><div class="media-title">Meta Ads</div><div class="metric-box"><div class="metric-label">Inversión</div><div class="metric-value" id="r-sabor-meta-inv">—</div></div><div class="metric-box"><div class="metric-label">Ingresos</div><div class="metric-value" id="r-sabor-meta-ing">—</div></div><div class="metric-box"><div class="metric-label">ROAS</div><div class="metric-value" id="r-sabor-meta-roas" style="color:var(--primary)">—</div></div></div>
       </div>
+      <div id="r-sabor-paid-analisis-wrap" style="display:none;margin-top:20px;"><div class="analysis-card"><p id="r-sabor-paid-analisis"></p></div></div>
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Orgánico</div></div>
@@ -658,6 +670,7 @@ function loadFromForm() {
       if (idx !== undefined && enrolados > 0) chartData[idx] = enrolados;
       return { enrolados, chartData, chartPrev: tryParseJSON(v('s-loyalty-chart-prev')) || [], yearCurrent: v('s-loyalty-year-current')||'2026', yearPrev: v('s-loyalty-year-prev')||'2025' };
     })();
+    data.paidAnalisis = v('s-paid-analisis');
     data.analisis = v('s-analisis');
   } else if (currentBrand === 'threeamigos') {
     data.mes = v('ta-mes'); data.resumen = v('ta-resumen');
@@ -700,6 +713,9 @@ function updateReport() {
     set(r+'meta-inv',    data.meta.inversion   > 0 ? fmtDol(data.meta.inversion)   : '—');
     set(r+'meta-ing',    data.meta.ingresos    > 0 ? fmtDol(data.meta.ingresos)    : '—');
     set(r+'meta-roas',   data.meta.roas        > 0 ? data.meta.roas.toFixed(2)+'x' : '—');
+    const paidWrap = document.getElementById(r+'paid-analisis-wrap');
+    if (paidWrap) { paidWrap.style.display = data.paidAnalisis ? 'block' : 'none'; }
+    set(r+'paid-analisis', data.paidAnalisis||'');
     set(r+'org-seg', data.org.seguidores > 0 ? fmt(data.org.seguidores) : '—');
     set(r+'org-alc', data.org.alcance    > 0 ? fmtK(data.org.alcance)  : '—');
     set(r+'org-eng', data.org.engagement > 0 ? fmt(data.org.engagement) : '—');
@@ -783,7 +799,23 @@ function updateCampFields(i) {
 }
 
 /* ===== INICIALIZACIÓN ===== */
+function checkClienteMode() {
+  if (new URLSearchParams(window.location.search).get('cliente')) {
+    document.body.classList.add('cliente-mode');
+    const banner = document.getElementById('cliente-banner');
+    if (banner) banner.style.display = 'block';
+  }
+}
+
+function copyClientLink() {
+  const url = window.location.origin + window.location.pathname + '?cliente=1';
+  navigator.clipboard.writeText(url).then(() => {
+    alert('✅ Link copiado:\n' + url + '\n\nCompártelo con tu cliente para que vea el informe en modo solo lectura.');
+  }).catch(() => { prompt('Copia este link para tu cliente:', url); });
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
+  checkClienteMode();
   // Detectar modo servidor
   try {
     const r = await fetch('/api/health', { signal: AbortSignal.timeout(800) });
