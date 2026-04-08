@@ -55,7 +55,7 @@ async function gitPush(key, content) {
     const filePath = `data/${encodeURIComponent(key)}.json`;
     const sha = await getFileSHA(filePath);
     const body = {
-      message: `data: update ${key}`,
+      message: `data: update ${key} [skip ci]`,
       content: Buffer.from(content).toString('base64'),
       branch:  GH_BRANCH,
       ...(sha && { sha })
@@ -74,7 +74,7 @@ async function gitDelete(key) {
     const sha = await getFileSHA(filePath);
     if (!sha) return;
     await ghRequest('DELETE', filePath, {
-      message: `data: delete ${key}`,
+      message: `data: delete ${key} [skip ci]`,
       sha,
       branch: GH_BRANCH
     });
