@@ -482,6 +482,7 @@ async function kv_getAll() {
 /* ===== ESTADO GLOBAL ===== */
 let currentBrand = 'sabor';
 let charInstance = null;
+let prevData = null;
 const brandColors = { sabor:'#CC2200', threeamigos:'#2D6A4F', lacaseta:'#B5451B', mabi:'#1B4F72' };
 const brandNames  = { sabor:'Sabor', threeamigos:'Three Amigos', lacaseta:'La Caseta', mabi:'Mabí' };
 const data = {};
@@ -493,6 +494,21 @@ function fmt(num) { return new Intl.NumberFormat('es-ES').format(Math.round(num)
 function fmtK(num) { return num >= 1000 ? (num/1000).toFixed(1)+'K' : fmt(num); }
 function fmtDol(num) { return '$'+fmt(num); }
 function set(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
+function prevN(fieldId) { return prevData ? (parseFloat(prevData[fieldId]) || 0) : 0; }
+function setDelta(id, current, previous) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const existing = el.parentElement.querySelector('.delta-badge');
+  if (existing) existing.remove();
+  if (!previous || previous === 0 || !current || current === 0) return;
+  const pct = ((current - previous) / Math.abs(previous)) * 100;
+  const up = pct >= 0;
+  const badge = document.createElement('span');
+  badge.className = 'delta-badge';
+  badge.style.cssText = 'font-size:10px;font-weight:700;display:block;margin-top:4px;color:' + (up ? '#16a34a' : '#dc2626');
+  badge.textContent = (up ? '↑ +' : '↓ ') + Math.abs(pct).toFixed(1) + '%';
+  el.after(badge);
+}
 
 /* ===== MARCAS ===== */
 async function switchBrand(brandId, skipSave) {
@@ -501,6 +517,7 @@ async function switchBrand(brandId, skipSave) {
   updateBrandUI();
   showBrandSection(brandId);
   await loadBrandLastMonth();
+  await loadPrevMonthData();
   loadFromForm();
   updateReport();
   await renderMonthSelector();
@@ -542,6 +559,19 @@ async function loadBrandLastMonth() {
 /* ===== ALMACENAMIENTO ===== */
 async function getSavedMonths() {
   try { return JSON.parse(await kv_get('raydal-' + currentBrand + '-meses') || '[]'); } catch { return []; }
+}
+
+async function loadPrevMonthData() {
+  prevData = null;
+  const prefixMap = { sabor:'s', threeamigos:'ta', lacaseta:'lc', mabi:'mb' };
+  const prefix = prefixMap[currentBrand];
+  const currentMes = v(prefix + '-mes').trim();
+  if (!currentMes) return;
+  const months = await getSavedMonths();
+  const idx = months.indexOf(currentMes);
+  if (idx <= 0) return;
+  const raw = await kv_get('raydal-' + currentBrand + '-' + months[idx - 1]);
+  if (raw) prevData = JSON.parse(raw);
 }
 
 async function saveCurrentMonth() {
@@ -589,6 +619,7 @@ async function switchToMonth(mes) {
   const raw = await kv_get('raydal-' + currentBrand + '-' + mes);
   if (!raw) return;
   deserializeForm(JSON.parse(raw));
+  await loadPrevMonthData();
   loadFromForm();
   updateReport();
 }
@@ -710,26 +741,36 @@ function updateReport() {
     set(r+'google-inv',  data.google.inversion > 0 ? fmtDol(data.google.inversion) : '—');
     set(r+'google-ing',  data.google.ingresos  > 0 ? fmtDol(data.google.ingresos)  : '—');
     set(r+'google-roas', data.google.roas      > 0 ? data.google.roas.toFixed(2)+'x' : '—');
+    setDelta(r+'google-roas', data.google.roas, prevN('s-google-roas'));
     set(r+'meta-inv',    data.meta.inversion   > 0 ? fmtDol(data.meta.inversion)   : '—');
     set(r+'meta-ing',    data.meta.ingresos    > 0 ? fmtDol(data.meta.ingresos)    : '—');
     set(r+'meta-roas',   data.meta.roas        > 0 ? data.meta.roas.toFixed(2)+'x' : '—');
+    setDelta(r+'meta-roas', data.meta.roas, prevN('s-meta-roas'));
     const paidWrap = document.getElementById(r+'paid-analisis-wrap');
     if (paidWrap) { paidWrap.style.display = data.paidAnalisis ? 'block' : 'none'; }
     set(r+'paid-analisis', data.paidAnalisis||'');
     set(r+'org-seg', data.org.seguidores > 0 ? fmt(data.org.seguidores) : '—');
+    setDelta(r+'org-seg', data.org.seguidores, prevN('s-org-seguidores'));
     set(r+'org-alc', data.org.alcance    > 0 ? fmtK(data.org.alcance)  : '—');
+    setDelta(r+'org-alc', data.org.alcance, prevN('s-org-alcance'));
     set(r+'org-eng', data.org.engagement > 0 ? fmt(data.org.engagement) : '—');
+    setDelta(r+'org-eng', data.org.engagement, prevN('s-org-engagement'));
     renderPostsGrid(r+'carruseles', data.carruseles, '🖼️ Carrusel');
     renderPostsGrid(r+'reels', data.reels, '🎬 Reel');
     renderCampaignsTable(r+'campaigns', data.campaigns, true);
     renderAutomations('sabor', data.automations);
     renderLoyaltyChart('sabor', data.loyaltyProgram);
+    setDelta(r+'loyalty-new', data.loyaltyProgram?.enrolled || 0, prevN('s-loyalty-enrolados'));
     set(r+'analisis', data.analisis||'—');
   } else {
+    const pfx = { threeamigos:'ta', lacaseta:'lc', mabi:'mb' }[currentBrand] || currentBrand;
     set(r+'resumen', data.resumen||'—');
     set(r+'org-seg', data.org.seguidores > 0 ? fmt(data.org.seguidores) : '—');
+    setDelta(r+'org-seg', data.org.seguidores, prevN(pfx+'-org-seguidores'));
     set(r+'org-alc', data.org.alcance    > 0 ? fmtK(data.org.alcance)  : '—');
+    setDelta(r+'org-alc', data.org.alcance, prevN(pfx+'-org-alcance'));
     set(r+'org-eng', data.org.engagement > 0 ? fmt(data.org.engagement) : '—');
+    setDelta(r+'org-eng', data.org.engagement, prevN(pfx+'-org-engagement'));
     if (data.posts) renderPostsGrid(r+'posts', data.posts, '📸 Post');
     if (data.campaigns) renderCampaignsTable(r+'campaigns', data.campaigns, false);
     set(r+'analisis', data.analisis||'—');
