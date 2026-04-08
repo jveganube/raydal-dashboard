@@ -119,8 +119,8 @@ app.post('/api/kv', async (req, res) => {
   try {
     const content = typeof value === 'string' ? value : JSON.stringify(value);
     fs.writeFileSync(keyToFile(key), content);
+    await gitPush(key, content); // síncrono: espera confirmación de GitHub antes de responder
     res.json({ ok: true });
-    gitPush(key, content); // fire-and-forget, no bloquea la respuesta
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -131,8 +131,8 @@ app.delete('/api/kv/:key', async (req, res) => {
   const key  = decodeURIComponent(req.params.key);
   const file = keyToFile(key);
   if (fs.existsSync(file)) fs.unlinkSync(file);
+  await gitDelete(key); // síncrono: espera confirmación de GitHub antes de responder
   res.json({ ok: true });
-  gitDelete(key); // fire-and-forget
 });
 
 app.listen(PORT, () => console.log(`✅  Raydal Dashboard en http://localhost:${PORT}`));

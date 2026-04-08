@@ -669,10 +669,16 @@ async function exportHTML() {
 function toggleEditPanel() { document.getElementById('edit-panel').classList.toggle('hidden'); }
 
 async function applyData() {
-  await saveCurrentMonth();
-  loadFromForm();
-  updateReport();
-  document.getElementById('edit-panel').classList.add('hidden');
+  const btn = document.querySelector('.btn-primary[onclick="applyData()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
+  try {
+    await saveCurrentMonth();
+    loadFromForm();
+    updateReport();
+    document.getElementById('edit-panel').classList.add('hidden');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Actualizar informe'; }
+  }
 }
 
 /* ===== CARGAR DATOS DEL FORMULARIO ===== */
