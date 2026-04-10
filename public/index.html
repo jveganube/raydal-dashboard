@@ -127,6 +127,19 @@
     .loyalty-title { font-size: 12px; font-weight: 700; color: var(--gray-800); margin-bottom: 12px; }
     .loyalty-stat { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 24px; }
     [id$="-loyalty-canvas"] { height: 220px !important; max-height: 220px; }
+    #r-sabor-visits-canvas { height: 300px !important; max-height: 300px; }
+    .product-bar-row { display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--gray-200); }
+    .product-bar-row:last-child { border-bottom:none; }
+    .product-medal { font-size:22px;line-height:1;min-width:28px; }
+    .product-info { flex:1; }
+    .product-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:6px; }
+    .product-name { font-size:13px;font-weight:700;color:var(--gray-800); }
+    .product-units { font-size:13px;font-weight:800;color:var(--gray-800); }
+    .product-track { background:var(--gray-100);border-radius:99px;height:6px;overflow:hidden; }
+    .product-bar { height:100%;border-radius:99px;transition:width 0.3s; }
+    .product-date { font-size:10px;color:var(--gray-400);margin-top:4px; }
+    .product-tipo { font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px; }
+    .visits-kpi-row { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px; }
 
     .analysis-card { background: var(--gray-50); border-radius: 12px; padding: 20px; border-left: 4px solid var(--primary); }
     .analysis-card p { color: var(--gray-600); font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
@@ -206,6 +219,16 @@
       <h3>Análisis Paid Media</h3>
       <div class="field"><label>Notas e insights sobre Google Ads y Meta Ads</label><textarea id="s-paid-analisis" placeholder="Ej: Google salió del aprendizaje, Meta con CPL eficiente en lower funnel..."></textarea></div>
     </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Visitas Mensuales (Cadena)</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;">
+        <div class="field"><label>2022 (Jan→Dec, comas)</label><textarea id="s-visits-2022" placeholder="11629,12109,..."></textarea></div>
+        <div class="field"><label>2023</label><textarea id="s-visits-2023" placeholder="16158,15437,..."></textarea></div>
+        <div class="field"><label>2024</label><textarea id="s-visits-2024" placeholder="16255,16167,..."></textarea></div>
+        <div class="field"><label>2025</label><textarea id="s-visits-2025" placeholder="17370,22713,..."></textarea></div>
+        <div class="field"><label>2026 (YTD)</label><textarea id="s-visits-2026" placeholder="26553,27570,..."></textarea></div>
+      </div>
+    </div>
     <div class="edit-section brand-section-sabor">
       <h3>Orgánico</h3>
       <div class="field"><label>Seguidores totales</label><input type="number" id="s-org-seguidores"></div>
@@ -236,6 +259,16 @@
         <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp3-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp3-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp3-canal" onchange="updateCampFields(3)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp3-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp3-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp3-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp3-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp3-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp3-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp3-compras"></div></div><div id="s-camp3-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp3-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp3-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp3-sms-ventas"></div></div></div>
         <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp4-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp4-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp4-canal" onchange="updateCampFields(4)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp4-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp4-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp4-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp4-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp4-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp4-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp4-compras"></div></div><div id="s-camp4-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp4-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp4-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp4-sms-ventas"></div></div></div>
         <div><div class="field"><label>Nombre/Asunto</label><input type="text" id="s-camp5-nombre"></div><div class="field"><label>Fecha</label><input type="text" id="s-camp5-fecha" placeholder="MM/DD/YYYY"></div><div class="field"><label>Canal</label><select id="s-camp5-canal" onchange="updateCampFields(5)"><option value="">-</option><option value="Email">Email</option><option value="SMS">SMS</option><option value="Email+SMS">Email+SMS</option></select></div><div class="field"><label>Segmento</label><select id="s-camp5-segmento"><option value="">-</option><option value="Everyone">Everyone</option><option value="Lapsed Customer">Lapsed Customer</option><option value="Loyalty Customer">Loyalty Customer</option></select></div><div id="s-camp5-ef"><div class="field"><label>Enviados</label><input type="number" id="s-camp5-enviados"></div><div class="field"><label>Apertura (%)</label><input type="number" id="s-camp5-apertura" step="0.01"></div><div class="field"><label>CTR (%)</label><input type="number" id="s-camp5-ctr" step="0.01"></div><div class="field"><label>Ventas ($)</label><input type="number" id="s-camp5-ventas"></div><div class="field"><label>Compras</label><input type="number" id="s-camp5-compras"></div></div><div id="s-camp5-sf" style="display:none;"><div class="field"><label>Enviados SMS</label><input type="number" id="s-camp5-sms-env"></div><div class="field"><label>CTR SMS (%)</label><input type="number" id="s-camp5-sms-ctr" step="0.01"></div><div class="field"><label>Ventas SMS ($)</label><input type="number" id="s-camp5-sms-ventas"></div></div></div>
+      </div>
+    </div>
+    <div class="edit-section brand-section-sabor full-width">
+      <h3>Top 5 Productos del Mes</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+        <div><div class="field"><label>Producto 1</label><input type="text" id="s-prod1-nombre"></div><div class="field"><label>Unidades vendidas</label><input type="number" id="s-prod1-unidades"></div><div class="field"><label>Período</label><input type="text" id="s-prod1-fecha" placeholder="Ej: Mar 2026"></div><div class="field"><label>Tipo</label><select id="s-prod1-tipo"><option value="">—</option><option value="Promo">Promo</option><option value="Regular">Regular</option></select></div></div>
+        <div><div class="field"><label>Producto 2</label><input type="text" id="s-prod2-nombre"></div><div class="field"><label>Unidades vendidas</label><input type="number" id="s-prod2-unidades"></div><div class="field"><label>Período</label><input type="text" id="s-prod2-fecha" placeholder="Ej: Mar 2026"></div><div class="field"><label>Tipo</label><select id="s-prod2-tipo"><option value="">—</option><option value="Promo">Promo</option><option value="Regular">Regular</option></select></div></div>
+        <div><div class="field"><label>Producto 3</label><input type="text" id="s-prod3-nombre"></div><div class="field"><label>Unidades vendidas</label><input type="number" id="s-prod3-unidades"></div><div class="field"><label>Período</label><input type="text" id="s-prod3-fecha" placeholder="Ej: Mar 2026"></div><div class="field"><label>Tipo</label><select id="s-prod3-tipo"><option value="">—</option><option value="Promo">Promo</option><option value="Regular">Regular</option></select></div></div>
+        <div><div class="field"><label>Producto 4</label><input type="text" id="s-prod4-nombre"></div><div class="field"><label>Unidades vendidas</label><input type="number" id="s-prod4-unidades"></div><div class="field"><label>Período</label><input type="text" id="s-prod4-fecha" placeholder="Ej: Mar 2026"></div><div class="field"><label>Tipo</label><select id="s-prod4-tipo"><option value="">—</option><option value="Promo">Promo</option><option value="Regular">Regular</option></select></div></div>
+        <div><div class="field"><label>Producto 5</label><input type="text" id="s-prod5-nombre"></div><div class="field"><label>Unidades vendidas</label><input type="number" id="s-prod5-unidades"></div><div class="field"><label>Período</label><input type="text" id="s-prod5-fecha" placeholder="Ej: Mar 2026"></div><div class="field"><label>Tipo</label><select id="s-prod5-tipo"><option value="">—</option><option value="Promo">Promo</option><option value="Regular">Regular</option></select></div></div>
       </div>
     </div>
     <div class="edit-section brand-section-sabor full-width">
@@ -340,6 +373,15 @@
       <div class="cover-accent"></div>
     </div>
     <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-sabor-resumen">—</p></div></div>
+    <div class="section" id="r-sabor-visits-section" style="display:none;">
+      <div class="section-header"><div class="section-title">Visitas Mensuales — Cadena Sabor</div></div>
+      <div class="visits-kpi-row">
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-ytd-pct" style="color:var(--primary)">—</div><div class="kpi-label">Crecimiento YTD 2026 vs 2025</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2026-total">—</div><div class="kpi-label">Total visitas 2026 (YTD)</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2025-cmp">—</div><div class="kpi-label">Mismo período 2025</div></div>
+      </div>
+      <canvas id="r-sabor-visits-canvas"></canvas>
+    </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Paid Media</div></div>
       <div class="paid-media-grid">
@@ -357,6 +399,10 @@
     <div class="section">
       <div class="section-header"><div class="section-title">Campañas de Email</div></div>
       <table class="campaigns-table" id="r-sabor-campaigns"><thead><tr><th>Nombre/Asunto</th><th>Fecha</th><th>Canal</th><th>Segmento</th><th>Enviados</th><th>Apertura</th><th>CTR</th><th>Ventas</th><th>Compras</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="section" id="r-sabor-products-section" style="display:none;">
+      <div class="section-header"><div class="section-title">Top 5 Productos del Mes</div></div>
+      <div id="r-sabor-products-list"></div>
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Automatizaciones</div></div>
@@ -482,6 +528,7 @@ async function kv_getAll() {
 /* ===== ESTADO GLOBAL ===== */
 let currentBrand = 'sabor';
 let charInstance = null;
+let visitsChartInstance = null;
 let prevData = null;
 const brandColors = { sabor:'#CC2200', threeamigos:'#2D6A4F', lacaseta:'#B5451B', mabi:'#1B4F72' };
 const brandNames  = { sabor:'Sabor', threeamigos:'Three Amigos', lacaseta:'La Caseta', mabi:'Mabí' };
@@ -709,6 +756,19 @@ function loadFromForm() {
     })();
     data.paidAnalisis = v('s-paid-analisis');
     data.analisis = v('s-analisis');
+    data.visits = {
+      y2022: parseVisitStr(v('s-visits-2022')),
+      y2023: parseVisitStr(v('s-visits-2023')),
+      y2024: parseVisitStr(v('s-visits-2024')),
+      y2025: parseVisitStr(v('s-visits-2025')),
+      y2026: parseVisitStr(v('s-visits-2026'))
+    };
+    data.productos = [1,2,3,4,5].map(i => ({
+      nombre: v('s-prod'+i+'-nombre'),
+      unidades: n('s-prod'+i+'-unidades'),
+      fecha: v('s-prod'+i+'-fecha'),
+      tipo: v('s-prod'+i+'-tipo')
+    })).filter(p => p.nombre.trim() && p.unidades > 0);
   } else if (currentBrand === 'threeamigos') {
     data.mes = v('ta-mes'); data.resumen = v('ta-resumen');
     data.org = { seguidores:n('ta-org-seguidores'), alcance:n('ta-org-alcance'), engagement:n('ta-org-engagement') };
@@ -734,6 +794,81 @@ function tryParseJSON(str) {
   try { return JSON.parse(str); } catch {
     try { return JSON.parse('[' + str.trim() + ']'); } catch { return null; }
   }
+}
+
+function parseVisitStr(str) {
+  if (!str || !str.trim()) return [];
+  return str.split(',').map(s => parseInt(s.trim().replace(/[^\d]/g,''), 10) || 0).filter((v,i,a) => i < 12);
+}
+
+function renderVisitsChart(prefix, visits) {
+  const section = document.getElementById('r-'+prefix+'-visits-section');
+  if (!section) return;
+  const hasData = visits && (visits.y2026.length > 0 || visits.y2025.length > 0);
+  section.style.display = hasData ? '' : 'none';
+  if (!hasData) return;
+  const n26 = visits.y2026.length;
+  const ytd26 = visits.y2026.reduce((a,b)=>a+b, 0);
+  const ytd25 = visits.y2025.slice(0, n26).reduce((a,b)=>a+b, 0);
+  const pctStr = ytd25 > 0 ? ((ytd26-ytd25)/ytd25*100).toFixed(1)+'%' : '—';
+  const pctEl = document.getElementById('r-'+prefix+'-visits-ytd-pct');
+  if (pctEl) {
+    const num = ytd25 > 0 ? (ytd26-ytd25)/ytd25*100 : 0;
+    pctEl.textContent = (num >= 0 ? '+' : '') + pctStr;
+    pctEl.style.color = num >= 0 ? '#16a34a' : '#dc2626';
+  }
+  set('r-'+prefix+'-visits-2026-total', fmt(ytd26));
+  set('r-'+prefix+'-visits-2025-cmp', fmt(ytd25));
+  const canvas = document.getElementById('r-'+prefix+'-visits-canvas');
+  if (!canvas) return;
+  if (visitsChartInstance) { visitsChartInstance.destroy(); visitsChartInstance = null; }
+  const pad = arr => { const a = [...arr]; while(a.length < 12) a.push(null); return a; };
+  visitsChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+      datasets: [
+        { label: '2022', data: pad(visits.y2022), backgroundColor: '#374151', borderRadius: 3, barPercentage: 0.9 },
+        { label: '2023', data: pad(visits.y2023), backgroundColor: '#CC2200', borderRadius: 3, barPercentage: 0.9 },
+        { label: '2024', data: pad(visits.y2024), backgroundColor: '#D97706', borderRadius: 3, barPercentage: 0.9 },
+        { label: '2025', data: pad(visits.y2025), backgroundColor: '#2563EB', borderRadius: 3, barPercentage: 0.9 },
+        { label: '2026', data: pad(visits.y2026), backgroundColor: '#06B6D4', borderRadius: 3, barPercentage: 0.9 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
+      scales: { y: { beginAtZero: false, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } } }
+    }
+  });
+}
+
+function renderProductos(prefix, productos) {
+  const section = document.getElementById('r-'+prefix+'-products-section');
+  const list = document.getElementById('r-'+prefix+'-products-list');
+  if (!section || !list) return;
+  if (!productos || productos.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  const maxU = Math.max(...productos.map(p=>p.unidades));
+  list.innerHTML = productos.map((p, i) => {
+    const pct = maxU > 0 ? (p.unidades/maxU*100).toFixed(1) : 0;
+    const isPromo = p.tipo === 'Promo';
+    const barColor = isPromo ? '#CC2200' : '#2563EB';
+    const tipoBg   = isPromo ? 'rgba(204,34,0,0.1)' : 'rgba(37,99,235,0.1)';
+    const tipoBadge = p.tipo ? '<span class="product-tipo" style="background:'+tipoBg+';color:'+barColor+';">'+p.tipo+'</span>' : '';
+    return '<div class="product-bar-row">' +
+      '<span class="product-medal">'+medals[i]+'</span>' +
+      '<div class="product-info">' +
+        '<div class="product-header">' +
+          '<span class="product-name">'+p.nombre+'</span>' +
+          '<span style="display:flex;align-items:center;gap:8px;">'+tipoBadge+'<span class="product-units">'+fmt(p.unidades)+' u.</span></span>' +
+        '</div>' +
+        '<div class="product-track"><div class="product-bar" style="width:'+pct+'%;background:'+barColor+';"></div></div>' +
+        (p.fecha ? '<div class="product-date">'+p.fecha+'</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 /* ===== RENDERIZAR INFORME ===== */
@@ -764,9 +899,11 @@ function updateReport() {
     renderPostsGrid(r+'carruseles', data.carruseles, '🖼️ Carrusel');
     renderPostsGrid(r+'reels', data.reels, '🎬 Reel');
     renderCampaignsTable(r+'campaigns', data.campaigns, true);
+    renderProductos('sabor', data.productos);
     renderAutomations('sabor', data.automations);
     renderLoyaltyChart('sabor', data.loyaltyProgram);
     setDelta(r+'loyalty-new', data.loyaltyProgram?.enrolled || 0, prevN('s-loyalty-enrolados'));
+    renderVisitsChart('sabor', data.visits);
     set(r+'analisis', data.analisis||'—');
   } else {
     const pfx = { threeamigos:'ta', lacaseta:'lc', mabi:'mb' }[currentBrand] || currentBrand;
@@ -909,6 +1046,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     sv('s-loyalty-chart-data','[1300,1286,1980,0,0,0,0,0,0,0,0,0]');
     sv('s-loyalty-chart-prev','[585,1045,1355,1435,1421,1328,1357,1419,1255,1263,1034,1245]');
     sv('s-loyalty-year-current','2026'); sv('s-loyalty-year-prev','2025');
+    sv('s-visits-2022','11629,12109,13900,14272,15686,14274,14440,15349,14677,16060,15066,14597');
+    sv('s-visits-2023','16158,15437,18270,17148,18563,16922,15827,17551,16473,17545,15553,14985');
+    sv('s-visits-2024','16255,16167,17151,17355,18028,17039,18056,18400,17924,19447,17732,16761');
+    sv('s-visits-2025','17370,22713,27340,29298,29485,28510,29737,30151,29363,30550,26244,26677');
+    sv('s-visits-2026','26553,27570');
   }
 
   // Three Amigos
