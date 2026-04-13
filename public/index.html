@@ -220,7 +220,7 @@
       <div class="field"><label>Notas e insights sobre Google Ads y Meta Ads</label><textarea id="s-paid-analisis" placeholder="Ej: Google salió del aprendizaje, Meta con CPL eficiente en lower funnel..."></textarea></div>
     </div>
     <div class="edit-section brand-section-sabor full-width">
-      <h3>Visitas Mensuales (Cadena)</h3>
+      <h3>Visitas Mensuales (Loyalty Customers)</h3>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;">
         <div class="field"><label>2022 (Jan→Dec, comas)</label><textarea id="s-visits-2022" placeholder="11629,12109,..."></textarea></div>
         <div class="field"><label>2023</label><textarea id="s-visits-2023" placeholder="16158,15437,..."></textarea></div>
@@ -373,15 +373,6 @@
       <div class="cover-accent"></div>
     </div>
     <div class="section"><div class="section-header"><div class="section-title">Resumen Ejecutivo</div></div><div class="exec-card"><p id="r-sabor-resumen">—</p></div></div>
-    <div class="section" id="r-sabor-visits-section" style="display:none;">
-      <div class="section-header"><div class="section-title">Visitas Mensuales — Cadena Sabor</div></div>
-      <div class="visits-kpi-row">
-        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-ytd-pct" style="color:var(--primary)">—</div><div class="kpi-label">Crecimiento YTD 2026 vs 2025</div></div>
-        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2026-total">—</div><div class="kpi-label">Total visitas 2026 (YTD)</div></div>
-        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2025-cmp">—</div><div class="kpi-label">Mismo período 2025</div></div>
-      </div>
-      <canvas id="r-sabor-visits-canvas"></canvas>
-    </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Paid Media</div></div>
       <div class="paid-media-grid">
@@ -414,6 +405,15 @@
       </div>
     </div>
     <div class="section"><div class="section-header"><div class="section-title">Loyalty Program</div></div><div class="loyalty-card"><div class="loyalty-title">Nuevos enrolados este mes</div><div class="loyalty-stat" id="r-sabor-loyalty-new">0</div><canvas id="r-sabor-loyalty-canvas"></canvas></div></div>
+    <div class="section" id="r-sabor-visits-section" style="display:none;">
+      <div class="section-header"><div class="section-title">Visitas Mensuales — Loyalty Customers</div></div>
+      <div class="visits-kpi-row">
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-ytd-pct" style="color:var(--primary)">—</div><div class="kpi-label">Crecimiento YTD 2026 vs 2025</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2026-total">—</div><div class="kpi-label">Total visitas 2026 (YTD)</div></div>
+        <div class="kpi-card"><div class="kpi-value" id="r-sabor-visits-2025-cmp">—</div><div class="kpi-label">Mismo período 2025</div></div>
+      </div>
+      <canvas id="r-sabor-visits-canvas"></canvas>
+    </div>
     <div class="section"><div class="section-header"><div class="section-title">Análisis</div></div><div class="analysis-card"><p id="r-sabor-analisis">—</p></div></div>
   </div>
 
