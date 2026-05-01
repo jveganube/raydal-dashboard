@@ -11,9 +11,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-// Convierte una clave localStorage en nombre de archivo seguro
+// Convierte una clave localStorage en nombre de archivo
 function keyToFile(key) {
-  return path.join(DATA_DIR, encodeURIComponent(key) + '.json');
+  return path.join(DATA_DIR, key + '.json');
 }
 
 // ─── GitHub auto-commit ───────────────────────────────────────────────────────
